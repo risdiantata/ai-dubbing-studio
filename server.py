@@ -28,11 +28,12 @@ CORS(app)
 app.secret_key = 'dubbing-studio-pro-2025-secret'
 
 # ==========================================
-# USER ACCOUNTS (username: {password, role})
+# DAFTAR AKUN (username: {password, role})
 # ==========================================
 USERS = {
     'admin': {'password': 'admin123', 'role': 'pro'},
-    'pro': {'password': 'pro123', 'role': 'pro'},
+    'vip':   {'password': 'vip777',   'role': 'pro'},
+    'pro_user': {'password': 'password123', 'role': 'pro'},
 }
 
 # Demo limits
@@ -1623,7 +1624,7 @@ LOGIN_HTML = '''
             <span class="badge badge-pro">PRO</span>
             <div class="logo">&#127908;</div>
             <h2>Pro</h2>
-            <div class="price"><b>Premium</b> / akses penuh</div>
+            <div class="price"><b>Rp 50rb</b> / bulan</div>
             <ul class="features">
                 <li class="yes">Video dubbing tanpa batas</li>
                 <li class="yes">Subtitle otomatis</li>
@@ -1633,19 +1634,29 @@ LOGIN_HTML = '''
                 <li class="yes">Mode Sync Audio</li>
                 <li class="yes">Keep Original SFX</li>
             </ul>
-            {{ error_html }}
-            <form method="POST" action="/login">
-                <div class="input-group">
-                    <label>Username</label>
-                    <input type="text" name="username" placeholder="Username Pro">
-                </div>
-                <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" name="password" placeholder="Password">
-                </div>
-                <button type="submit" class="btn btn-pro">Login Pro</button>
-            </form>
-            <p class="contact">Hubungi admin untuk akun Pro</p>
+            
+            <!-- PURCHASE BUTTON -->
+            <a href="https://wa.me/62881023345395?text=Halo%20Admin%2C%20saya%20tertarik%20beli%20akun%20AI%20Dubbing%20Studio%20Pro" target="_blank" style="text-decoration: none;">
+                <button type="button" class="btn btn-pro" style="margin-bottom: 20px; background: linear-gradient(135deg, #25D366, #128C7E);">
+                    <i class="fab fa-whatsapp"></i> Beli Akun Pro (WhatsApp)
+                </button>
+            </a>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <p style="color: rgba(255,255,255,0.4); font-size: 11px; margin-bottom: 10px;">Sudah punya akun? Login di bawah:</p>
+                {{ error_html }}
+                <form method="POST" action="/login">
+                    <div class="input-group">
+                        <label>Username</label>
+                        <input type="text" name="username" placeholder="Username Pro">
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="Password">
+                    </div>
+                    <button type="submit" class="btn btn-pro">Masuk ke Studio Pro</button>
+                </form>
+            </div>
         </div>
     </div>
 </body>

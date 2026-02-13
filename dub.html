@@ -426,16 +426,24 @@
 
     <div class="app-box">
         <div class="header">
-            <a href="../INDEX/index.html.txt"
-                style="position: absolute; left: 0; color: #666; text-decoration: none;"><i
-                    class="fas fa-arrow-left"></i></a>
-            <h1>AI Voice Artist</h1>
-            <div class="status-badge">
-                <span id="statusDot" class="status-dot"></span>
-                <span id="statusText">System Ready</span>
-                <span
-                    style="margin-left:8px; font-size: 0.9em; color: #00ff88; border-left: 1px solid #555; padding-left: 8px;">✨
-                    Pro Sync Active</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <h1>AI Voice Artist</h1>
+                    <span id="userBadge" class="badge-pro"
+                        style="font-size: 0.8em; padding: 4px 10px; border-radius: 12px; background: rgba(98, 0, 234, 0.1); color: #6200ea; display: none;"></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="status-badge">
+                        <span id="statusDot" class="status-dot"></span>
+                        <span id="statusText">System Ready</span>
+                    </div>
+                    <a href="/logout"
+                        style="text-decoration: none; color: #ef4444; font-weight: 600; font-size: 0.9em; padding: 8px 16px; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; transition: all 0.3s;"
+                        onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'"
+                        onmouseout="this.style.background='transparent'">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -1031,6 +1039,77 @@
         }
     </script>
 
+    <script>
+        // Check User Role & Apply Restrictions
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/user-info');
+                const data = await res.json();
+
+                if (!data.logged_in) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const userBadge = document.getElementById('userBadge');
+                if (userBadge) {
+                    userBadge.style.display = 'inline-block';
+                    userBadge.innerHTML = `<i class="fas fa-user"></i> ${data.username}`;
+                }
+
+                // Apply Demo Restrictions
+                if (data.role === 'demo') {
+                    if (userBadge) {
+                        userBadge.style.background = 'rgba(34, 197, 94, 0.1)';
+                        userBadge.style.color = '#10b981';
+                        userBadge.innerHTML += ' (DEMO)';
+                    }
+
+                    // Disable Pro Checkboxes
+                    const proFeatures = [
+                        { id: 'uniqueMode', name: 'Anti-Copyright' },
+                        { id: 'syncAudio', name: 'Sync Video to Audio' },
+                        { id: 'keepOriginal', name: 'Keep Original SFX' }
+                    ];
+
+                    proFeatures.forEach(feat => {
+                        const el = document.getElementById(feat.id);
+                        if (el) {
+                            el.disabled = true;
+                            el.checked = false;
+                            if (el.parentElement) {
+                                el.parentElement.style.opacity = '0.6';
+                                el.parentElement.style.cursor = 'not-allowed';
+                                el.parentElement.title = 'Upgrade to PRO to unlock';
+                                const lock = document.createElement('i');
+                                lock.className = 'fas fa-lock';
+                                lock.style.marginLeft = '8px';
+                                lock.style.fontSize = '0.8em';
+                                lock.style.color = '#ef4444';
+                                el.parentElement.appendChild(lock);
+                            }
+                        }
+                    });
+
+                    // Add Demo notice
+                    const notice = document.createElement('div');
+                    notice.style.padding = '12px';
+                    notice.style.background = 'rgba(239, 68, 68, 0.1)';
+                    notice.style.color = '#ef4444';
+                    notice.style.borderRadius = '12px';
+                    notice.style.marginBottom = '20px';
+                    notice.style.fontSize = '0.9em';
+                    notice.style.border = '1px solid rgba(239, 68, 68, 0.2)';
+                    notice.innerHTML = '<i class="fas fa-exclamation-circle"></i> <b>Mode Demo:</b> Durasi video terbatas dan fitur Pro dikunci.';
+
+                    const colLeft = document.querySelector('.col-left');
+                    if (colLeft) colLeft.insertBefore(notice, colLeft.firstChild);
+                }
+            } catch (err) {
+                console.error("Auth check failed:", err);
+            }
+        });
+    </script>
 </body>
 
 </html>
