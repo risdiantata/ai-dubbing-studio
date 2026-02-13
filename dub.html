@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Dubbing Studio Pro</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Playfair+Display:ital,wght@1,600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* PREMIUM GLASSMORPHISM THEME */
+        :root {
+            /* MODERN LIGHT THEME */
+            --bg-dark: #F0F4F8;
+            /* Soft Cloud White */
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            /* Frosted White */
+            --glass-border: rgba(255, 255, 255, 0.8);
+
+            /* Modern Vivid Gradient Accent */
+            --accent-gold: #6200ea;
+            /* Deep Violet Main */
+            --accent-glow: rgba(98, 0, 234, 0.3);
+
+            --text-main: #1a1a1a;
+            /* Dark Gray Text */
+            --text-mute: #555555;
+
+            --gradient-1: #6200ea;
+            --gradient-2: #c51162;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(98, 0, 234, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 64, 129, 0.1) 0%, transparent 40%);
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            animation: bgBreath 10s infinite alternate;
+        }
+
+        @keyframes bgBreath {
+            0% {
+                background-size: 100% 100%;
+            }
+
+            100% {
+                background-size: 110% 110%;
+            }
+        }
+
+        .app-box {
+            width: 100%;
+            max-width: 1000px;
+            /* Wider for Desktop */
+            background: rgba(255, 255, 255, 0.7);
+            /* White Glass */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), inset 0 0 20px rgba(255, 255, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            /* 2 Columns by default */
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Full Width Elements (Header, Tabs, Results) */
+        .header,
+        .mode-tabs,
+        .full-width,
+        #resultArea,
+        #progressArea {
+            grid-column: 1 / -1;
+        }
+
+        /* Left Column (Input) */
+        .col-left {
+            grid-column: 1 / 2;
+        }
+
+        /* Right Column (Settings) */
+        .col-right {
+            grid-column: 2 / 3;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2em;
+            margin: 10px 0 5px;
+            background: linear-gradient(45deg, #fff, var(--accent-gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-badge {
+            font-size: 0.75em;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            color: var(--text-mute);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-mute);
+            border-radius: 50%;
+            box-shadow: 0 0 5px var(--text-mute);
+        }
+
+        .status-dot.active {
+            background: #00ff88;
+            box-shadow: 0 0 8px #00ff88;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* MODE TABS */
+        .mode-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 5px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .mode-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9em;
+            cursor: pointer;
+            border-radius: 8px;
+            color: var(--text-mute);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .mode-tab:hover {
+            color: #fff;
+        }
+
+        .mode-tab.active {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--accent-gold);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .mode-tab input {
+            display: none;
+        }
+
+        /* FORM ELEMENTS */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85em;
+            color: var(--text-mute);
+            margin-bottom: 8px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        select,
+        textarea,
+        input[type="text"] {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            /* Light Input BG */
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            /* Dark Text */
+            padding: 12px 15px;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95em;
+            transition: 0.3s;
+            box-sizing: border-box;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 15px var(--accent-glow);
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        /* CUSTOM FILE INPUT */
+        .file-upload {
+            position: relative;
+            display: block;
+            width: 100%;
+            height: 120px;
+            border: 2px dashed rgba(0, 0, 0, 0.1);
+            /* Darker dash for light theme */
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            transition: 0.3s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-mute);
+            gap: 10px;
+        }
+
+        .file-upload:hover {
+            border-color: var(--accent-gold);
+            background: rgba(212, 175, 55, 0.05);
+            color: #fff;
+        }
+
+        .file-upload i {
+            font-size: 1.5em;
+        }
+
+        .file-upload input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .small-upload {
+            height: 60px;
+            flex-direction: row;
+        }
+
+        /* BUTTON */
+        .btn-process {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            box-shadow: 0 5px 20px var(--accent-glow);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-process:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--accent-glow);
+            filter: brightness(1.1);
+        }
+
+        .btn-process:active {
+            transform: translateY(1px);
+        }
+
+        .btn-process:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* PROGRESS */
+        .progress-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 25px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-gold);
+            width: 0%;
+            transition: width 0.4s ease;
+            box-shadow: 0 0 10px var(--accent-gold);
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.85em;
+            margin-top: 10px;
+            color: var(--accent-gold);
+            min-height: 20px;
+        }
+
+        /* ANIMATED RESULT */
+        .result-box {
+            margin-top: 25px;
+            padding: 2px;
+            border-radius: 12px;
+            background: linear-gradient(45deg, transparent, var(--accent-gold), transparent);
+            background-size: 200% 200%;
+            animation: borderFlow 3s infinite linear;
+        }
+
+        @keyframes borderFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .result-inner {
+            background: #000;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        button {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* MOBILE RESPONSIVE */
+        /* MOBILE RESPONSIVE & TABLET */
+        @media (max-width: 768px) {
+            .app-box {
+                max-width: 500px;
+                grid-template-columns: 1fr;
+                /* Stack Everything */
+                padding: 20px;
+            }
+
+            .col-left,
+            .col-right {
+                grid-column: 1 / -1;
+            }
+
+            body {
+                padding: 10px;
+                align-items: flex-start;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            /* Adjust flex containers */
+            div[style*="display: flex"] {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            .file-upload {
+                height: 100px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-box">
+        <div class="header">
+            <a href="../INDEX/index.html.txt"
+                style="position: absolute; left: 0; color: #666; text-decoration: none;"><i
+                    class="fas fa-arrow-left"></i></a>
+            <h1>AI Voice Artist</h1>
+            <div class="status-badge">
+                <span id="statusDot" class="status-dot"></span>
+                <span id="statusText">System Ready</span>
+                <span
+                    style="margin-left:8px; font-size: 0.9em; color: #00ff88; border-left: 1px solid #555; padding-left: 8px;">✨
+                    Pro Sync Active</span>
+            </div>
+        </div>
+
+        <!-- MODE TABS -->
+        <div class="mode-tabs">
+            <label class="mode-tab active" id="labelVideo" onclick="switchMode('video')">
+                <input type="radio" name="appMode" value="video" checked>
+                <i class="fas fa-video"></i> Dubbing
+            </label>
+            <label class="mode-tab" id="labelSubtitle" onclick="switchMode('subtitle')">
+                <i class="fas fa-closed-captioning"></i> Subtitle
+            </label>
+            <label class="mode-tab" id="labelTTS" onclick="switchMode('tts')">
+                <i class="fas fa-comment-alt"></i> Text to Speech
+            </label>
+            <!-- Hidden Image/Compress as requested -->
+            <label class="mode-tab hidden" id="labelImage" onclick="switchMode('image')">
+                <i class="fas fa-image"></i> Image
+            </label>
+            <label class="mode-tab hidden" id="labelCompress" onclick="switchMode('compress')">
+                <i class="fas fa-compress-arrows-alt"></i> Compress
+            </label>
+        </div>
+
+        <!-- LEFT COLUMN: MEDIA INPUTS -->
+        <div class="col-left">
+            <!-- 1. MEDIA INPUT -->
+            <div id="videoInputContainer" class="form-group">
+                <label id="inputLabel">1. Upload Source (Video)</label>
+                <label class="file-upload">
+                    <input type="file" id="videoInput" accept="video/*,image/*"
+                        onchange="updateFileName(this, 'fileNameDisplay')">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span id="fileNameDisplay">Click or Drag Video Here</span>
+                </label>
+            </div>
+
+            <!-- TEXT INPUT -->
+            <div class="form-group" id="textInputContainer">
+                <label id="textLabel">1b. Naskah Teks (Opsional)</label>
+                <textarea id="sourceText" rows="6" placeholder="Ketik teks di sini..."></textarea>
+            </div>
+
+            <!-- DUBBING AUDIO UPLOAD (NEW) -->
+            <div class="form-group" id="dubAudioContainer">
+                <label>🎤 Upload Dubbing Audio (Skip TTS)</label>
+                <label class="file-upload small-upload" style="border-style: dashed;">
+                    <input type="file" id="dubAudioInput" accept="audio/*"
+                        onchange="updateFileName(this, 'dubDisplay')">
+                    <i class="fas fa-microphone-alt"></i>
+                    <span id="dubDisplay">Select Voice File...</span>
+                </label>
+            </div>
+
+            <!-- BACKSOUND (Moved to Left for Balance) -->
+            <div class="form-group">
+                <label>🎵 Backsound / Ambience</label>
+                <label class="file-upload small-upload">
+                    <input type="file" id="backsoundInput" accept="audio/*"
+                        onchange="updateFileName(this, 'bsDisplay')">
+                    <i class="fas fa-music"></i>
+                    <span id="bsDisplay">Select Audio...</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: SETTINGS -->
+        <div class="col-right">
+            <!-- LANGUAGE -->
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Source (Asal)</label>
+                    <select id="sourceLang">
+                        <option value="auto">✨ Auto (Deteksi)</option>
+                        <option value="id-ID">🇮🇩 Indonesia</option>
+                        <option value="en-US">🇺🇸 English</option>
+                        <option value="ja-JP">🇯🇵 Japan</option>
+                        <option value="ko-KR">🇰🇷 Korea</option>
+                        <option value="zh-CN">🇨🇳 Chinese</option>
+                        <option value="fr-FR">🇫🇷 French</option>
+                        <option value="de-DE">🇩🇪 German</option>
+                        <option value="es-ES">🇪🇸 Spanish</option>
+                        <option value="pt-BR">🇧🇷 Portuguese</option>
+                        <option value="ru-RU">🇷🇺 Russian</option>
+                        <option value="hi-IN">🇮🇳 Hindi</option>
+                        <option value="th-TH">🇹🇭 Thai</option>
+                        <option value="vi-VN">🇻🇳 Vietnamese</option>
+                        <option value="ar-SA">🇸🇦 Arabic</option>
+                        <option value="tr-TR">🇹🇷 Turkish</option>
+                        <option value="it-IT">🇮🇹 Italian</option>
+                        <option value="ms-MY">🇲🇾 Malay</option>
+                        <option value="fil-PH">🇵🇭 Filipino</option>
+                        <option value="su-ID">Sunda</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Target (Tujuan)</label>
+                    <select id="targetLang">
+                        <option value="id-ID">🇮🇩 Indonesia</option>
+                        <option value="en-US">🇺🇸 English</option>
+                        <option value="ja-JP">🇯🇵 Japan</option>
+                        <option value="ko-KR">🇰🇷 Korea</option>
+                        <option value="zh-CN">🇨🇳 Chinese</option>
+                        <option value="fr-FR">🇫🇷 French</option>
+                        <option value="de-DE">🇩🇪 German</option>
+                        <option value="es-ES">🇪🇸 Spanish</option>
+                        <option value="pt-BR">🇧🇷 Portuguese</option>
+                        <option value="ru-RU">🇷🇺 Russian</option>
+                        <option value="hi-IN">🇮🇳 Hindi</option>
+                        <option value="th-TH">🇹🇭 Thai</option>
+                        <option value="vi-VN">🇻🇳 Vietnamese</option>
+                        <option value="ar-SA">🇸🇦 Arabic</option>
+                        <option value="tr-TR">🇹🇷 Turkish</option>
+                        <option value="it-IT">🇮🇹 Italian</option>
+                        <option value="ms-MY">🇲🇾 Malay</option>
+                        <option value="fil-PH">🇵🇭 Filipino</option>
+                        <option value="su-ID">Sunda</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- SUBTITLE LANGUAGE -->
+            <div class="form-group">
+                <label>Subtitle Language (Terjemahan Teks)</label>
+                <select id="subtitleLang">
+                    <option value="match">✨ Same as Voice (Sama dengan Suara)</option>
+                    <option value="id-ID">🇮🇩 Indonesia</option>
+                    <option value="en-US">🇺🇸 English</option>
+                    <option value="ja-JP">🇯🇵 Japan</option>
+                    <option value="ko-KR">🇰🇷 Korea</option>
+                    <option value="zh-CN">🇨🇳 Chinese</option>
+                    <option value="fr-FR">🇫🇷 French</option>
+                    <option value="de-DE">🇩🇪 German</option>
+                    <option value="es-ES">🇪🇸 Spanish</option>
+                    <option value="pt-BR">🇧🇷 Portuguese</option>
+                    <option value="ru-RU">🇷🇺 Russian</option>
+                    <option value="hi-IN">🇮🇳 Hindi</option>
+                    <option value="th-TH">🇹🇭 Thai</option>
+                    <option value="vi-VN">🇻🇳 Vietnamese</option>
+                    <option value="ar-SA">🇸🇦 Arabic</option>
+                    <option value="tr-TR">🇹🇷 Turkish</option>
+                    <option value="it-IT">🇮🇹 Italian</option>
+                    <option value="ms-MY">🇲🇾 Malay</option>
+                    <option value="fil-PH">🇵🇭 Filipino</option>
+                    <option value="su-ID">Sunda</option>
+                </select>
+            </div>
+
+            <!-- VOICE SETTINGS -->
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Suara (Voice)</label>
+                    <select id="genderSelect">
+                        <option value="auto">🤖 Auto</option>
+                        <option value="female">👩 Cewek</option>
+                        <option value="male">👨 Cowok</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Gaya Bicara</label>
+                    <select id="voiceEffect">
+                        <option value="normal">Normal</option>
+                        <option value="story"> Storytelling</option>
+                        <option value="dialog">️ Dialog</option>
+                        <option value="news"> News</option>
+                        <option value="happy"> Happy</option>
+                        <option value="sad">😔 Sad</option>
+                        <option value="angry"> Angry</option>
+                        <option value="terify"> Fear</option>
+                        <option value="chipmunk">🐿️ Chipmunk</option>
+                        <option value="monster">👹 Monster</option>
+                        <option value="kid">👶 Kid</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- BURN SUBTITLES -->
+            <div class="form-group" style="margin-bottom: 5px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="burnSubtitles" style="width: auto;" checked>
+                    <span>📝 Burn Subtitles (Hardcoded on Video)</span>
+                </label>
+            </div>
+
+            <!-- KEEP ORIGINAL AUDIO -->
+            <div class="form-group" style="margin-bottom: 5px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="keepOriginalAudio" style="width: auto;">
+                    <span>🔊 Keep Original Background Sound (Mix)</span>
+                </label>
+            </div>
+
+            <!-- SYNC VIDEO TO AUDIO -->
+            <div class="form-group" style="margin-bottom: 5px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="syncVideoToAudio" style="width: auto;">
+                    <div>
+                        <span>🎬 Sync Video ke Audio (Video Mengikuti)</span><br>
+                        <span style="font-size: 0.75em; color: #aaa;">Video dipercepat/diperlambat agar cocok dengan
+                            durasi dubbing</span>
+                    </div>
+                </label>
+            </div>
+
+            <!-- VISUAL SETTINGS -->
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Visual Style</label>
+                    <select id="visualEnhance">
+                        <option value="false">Original</option>
+                        <option value="true">✨ Remastered</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Camera Style</label>
+                    <select id="animationSelect">
+                        <option value="cinematic">🎥 Cinematic</option>
+                        <option value="breathing">🌬️ Breathing</option>
+                        <option value="pan">🔍 Zoom</option>
+                        <option value="none">⏹️ Statis</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ANTI-COPYRIGHT -->
+            <div class="form-group"
+                style="background: rgba(229, 9, 20, 0.1); padding: 10px; border-radius: 6px; border: 1px solid var(--gold);">
+                <label style="color: var(--gold); display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <input type="checkbox" id="uniqueMode" style="width: auto;">
+                    <div>
+                        <span style="font-weight: bold;">⚡ Anti-Copyright Pro</span><br>
+                        <span style="font-size: 0.8em; color: #ccc;">Safe Upload (Unique Hash)</span>
+                    </div>
+                </label>
+            </div>
+
+            <!-- COMPRESSION SETTINGS (Hidden by default) -->
+            <div class="form-group" id="compressSettings" style="display:none;">
+                <label>Target Size / Quality</label>
+                <select id="compressLevel">
+                    <option value="medium">⚖️ Medium (Balanced) - Recommended</option>
+                    <option value="high">💾 Smallest Size (Low Quality)</option>
+                    <option value="low">✨ High Quality (Larger Size)</option>
+                    <option value="whatsapp">📱 WhatsApp Optimized (Under 64MB)</option>
+                </select>
+            </div>
+
+            <!-- FORMAT -->
+            <div class="form-group" id="formatSettings">
+                <label>Output Format</label>
+                <select id="videoFormat">
+                    <option value="original">📁 Original (Full Resolution)</option>
+                    <option value="1080p">🖥️ Full HD (1080p)</option>
+                    <option value="landscape">📺 YouTube HD (720p)</option>
+                    <option value="portrait">📱 Shorts/TikTok (9:16)</option>
+                    <option value="audio">🎵 Audio MP3</option>
+                </select>
+            </div>
+
+            <!-- ACTION BUTTON -->
+            <button id="btnProcess" class="btn-process">
+                <i class="fas fa-magic"></i> PROCESS NOW
+            </button>
+        </div>
+
+        <!-- 4. PROGRESS -->
+        <div id="progressArea" class="hidden">
+            <div class="progress-bar" id="progressContainer" style="display: block;">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <div class="progress-text" id="progressText">Starting...</div>
+        </div>
+
+        <!-- 5. RESULT -->
+        <div id="resultArea" class="hidden result-box">
+            <div class="result-inner">
+                <div style="color: var(--accent-gold); font-weight: bold; margin-bottom: 10px;">
+                    <i class="fas fa-check-circle"></i> Complete!
+                </div>
+                <div id="playerContainer"></div>
+                <div class="button-group" style="display: flex; gap: 10px; margin-top: 15px;">
+                    <a id="btnReview" class="btn-process"
+                        style="flex: 1; text-decoration: none; background: rgba(255,255,255,0.2);" target="_blank"
+                        href="#">
+                        <i class="fas fa-eye"></i> Review
+                    </a>
+                    <a id="btnDownload" class="btn-process" style="flex: 1; text-decoration: none;" href="#" download>
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function updateFileName(input, displayId) {
+            if (input.files && input.files.length > 0) {
+                document.getElementById(displayId).innerText = input.files[0].name;
+                input.parentElement.style.borderColor = "#D4AF37";
+                input.parentElement.style.backgroundColor = "rgba(212, 175, 55, 0.1)";
+            }
+        }
+
+        // AUTO DETECT SERVER ADDRESS
+        // If opened as file (PC), use localhost.
+        // If opened as HTTP (Mobile/Network), use relative path.
+        let API_URL = "";
+        if (window.location.protocol === 'file:') {
+            API_URL = "http://localhost:5000";
+        }
+
+
+        // UI Elements
+        const btnProcess = document.getElementById('btnProcess');
+        const sourceLang = document.getElementById('sourceLang');
+        const targetLang = document.getElementById('targetLang');
+        const videoInput = document.getElementById('videoInput');
+        const videoFormat = document.getElementById('videoFormat');
+        const progressArea = document.getElementById('progressArea');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const resultArea = document.getElementById('resultArea');
+        const playerContainer = document.getElementById('playerContainer');
+        const btnDownload = document.getElementById('btnDownload');
+        const statusInd = document.getElementById('status-indicator');
+
+        // Check Server
+        async function checkStatus() {
+            try {
+                const res = await fetch(API_URL);
+                if (res.ok) {
+                    document.getElementById('statusDot').classList.add('active');
+                    document.getElementById('statusText').innerText = "System Online";
+                }
+            } catch (e) {
+                document.getElementById('statusDot').classList.remove('active');
+                document.getElementById('statusText').innerText = "Offline";
+            }
+        }
+        checkStatus();
+        setInterval(checkStatus, 30000);
+
+        // Mode Logic
+        let currentMode = 'video';
+
+        function switchMode(mode) {
+            currentMode = mode;
+
+            // UI Update Logic starts here...
+            const cVid = document.getElementById('videoInputContainer');
+            const lInp = document.getElementById('inputLabel');
+            const cTxt = document.getElementById('textInputContainer');
+
+            // NEW SELECTORS
+            const cAnim = document.getElementById('visualEnhance').parentElement.parentElement;
+            const cBack = document.getElementById('backsoundInput').parentElement.parentElement;
+            const cCompress = document.getElementById('compressSettings');
+            const cFormat = document.getElementById('formatSettings');
+            const cLang = document.getElementById('sourceLang').parentElement.parentElement;
+            const cVoice = document.getElementById('genderSelect').parentElement.parentElement;
+
+            // RESET ALL
+            cVid.style.display = 'block';
+            cTxt.style.display = 'block';
+            cAnim.style.display = 'flex';
+            cBack.style.display = 'block';
+            cCompress.style.display = 'none';
+            cFormat.style.display = 'block';
+            cLang.style.display = 'flex';
+            cVoice.style.display = 'flex';
+            if (document.getElementById('uniqueMode')) document.getElementById('uniqueMode').parentElement.parentElement.style.display = 'block';
+
+            // Show/Hide Logic
+            if (mode === 'video') {
+                lInp.innerText = "1. Upload Source (Video)";
+                document.getElementById('videoInput').accept = "video/*";
+
+                // Show all relevant controls
+                cLang.style.display = 'block';
+                cVoice.style.display = 'block';
+                cFormat.style.display = 'block';
+                cAnim.style.display = 'none';
+                cBack.style.display = 'block';
+
+                document.getElementById('textLabel').innerText = "1b. Script (Optional)";
+
+            } else if (mode === 'subtitle') {
+                // SUBTITLE MODE: No AI Voice, Just Subs
+                lInp.innerText = "1. Upload Source (Video)";
+                document.getElementById('videoInput').accept = "video/*";
+
+                cLang.style.display = 'block';     // Need Target Lang for translation
+                cVoice.style.display = 'none';     // No Voice needed
+                cFormat.style.display = 'block';    // Format valid
+                cAnim.style.display = 'none';
+                cBack.style.display = 'none';      // No backsound usually for just subs
+
+                document.getElementById('textLabel').innerText = "1b. Script (Optional)";
+
+            } else if (mode === 'image') {
+                lInp.innerText = "1. Upload Source (Image)";
+                document.getElementById('videoInput').accept = "image/*";
+                document.getElementById('textLabel').innerText = "1b. Script (Required)";
+            } else if (mode === 'tts') {
+                cVid.style.display = 'none';
+                cAnim.style.display = 'none';
+                cBack.style.display = 'block';
+                document.getElementById('textLabel').innerText = "1. Script (Required)";
+            } else if (mode === 'compress') {
+                lInp.innerText = "1. Upload Big Video";
+                document.getElementById('videoInput').accept = "video/*";
+
+                cTxt.style.display = 'none';
+                cAnim.style.display = 'none';
+                cBack.style.display = 'none';
+                cLang.style.display = 'none';
+                cVoice.style.display = 'none';
+                if (document.getElementById('uniqueMode')) document.getElementById('uniqueMode').parentElement.parentElement.style.display = 'none';
+                cFormat.style.display = 'none';
+
+                cCompress.style.display = 'block';
+            }
+
+            // Highlight Tab
+            document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+            if (mode === 'compress') document.getElementById('labelCompress').classList.add('active');
+            else if (mode === 'video') document.getElementById('labelVideo').classList.add('active');
+            else if (mode === 'subtitle') document.getElementById('labelSubtitle').classList.add('active');
+            else if (mode === 'tts') document.getElementById('labelTTS').classList.add('active');
+            else if (mode === 'image') document.getElementById('labelImage').classList.add('active');
+        }
+
+        btnProcess.onclick = async () => {
+            // Validation
+            if (currentMode === 'video' && !videoInput.files[0]) return alert("Pilih VIDEO dulu!");
+            if (currentMode === 'compress' && !videoInput.files[0]) return alert("Pilih VIDEO yang mau dikompres!");
+
+            const txt = document.getElementById('sourceText').value.trim();
+            if ((currentMode === 'tts' || currentMode === 'image') && !txt) return alert("Ketik teks dulu!");
+
+            // Reset UI
+            // resultArea.classList.add('hidden'); // KEEP PREVIOUS RESULT VISIBLE
+            progressArea.classList.remove('hidden');
+            btnProcess.disabled = true;
+
+            try {
+                // 1. Submit Job
+                const fd = new FormData();
+                fd.append('mode', currentMode);
+
+                if (currentMode === 'video' || currentMode === 'image' || currentMode === 'compress' || currentMode === 'subtitle') {
+                    fd.append('video', videoInput.files[0]);
+                }
+
+                fd.append('source_lang', sourceLang.value);
+                fd.append('target_lang', targetLang.value);
+                fd.append('video_format', videoFormat.value);
+
+                // New params
+                fd.append('gender', document.getElementById('genderSelect').value);
+                fd.append('enhance_video', document.getElementById('visualEnhance').value);
+                fd.append('unique_mode', document.getElementById('uniqueMode').checked);
+                fd.append('source_text', document.getElementById('sourceText').value);
+                fd.append('voice_effect', document.getElementById('voiceEffect').value);
+                fd.append('animation', document.getElementById('animationSelect').value);
+                fd.append('keep_original_audio', document.getElementById('keepOriginalAudio').checked);
+                fd.append('burn_subtitles', document.getElementById('burnSubtitles').checked);
+                fd.append('subtitle_lang', document.getElementById('subtitleLang').value);
+                fd.append('sync_video_to_audio', document.getElementById('syncVideoToAudio').checked);
+
+                if (document.getElementById('backsoundInput').files[0]) {
+                    fd.append('backsound', document.getElementById('backsoundInput').files[0]);
+                }
+
+                if (document.getElementById('dubAudioInput').files[0]) {
+                    fd.append('dub_audio', document.getElementById('dubAudioInput').files[0]);
+                }
+
+                progressText.innerText = "Mengupload...";
+
+                const res = await fetch(`${API_URL}/dub-video`, { method: 'POST', body: fd });
+
+                // DEBUG: Catch HTML errors (404/500)
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    const text = await res.text();
+                    // Extract Title from HTML if possible for cleaner error
+                    const titleMatch = text.match(/<title>(.*?)<\/title>/i);
+                    const errorMsg = titleMatch ? titleMatch[1] : text.substring(0, 100);
+                    throw new Error(`Server Error (${res.status}): ${errorMsg}`);
+                }
+
+                const data = await res.json();
+
+                if (data.error) throw new Error(data.error);
+
+                const taskId = data.task_id;
+
+                // 2. Poll Progress
+                const interval = setInterval(async () => {
+                    try {
+                        const pRes = await fetch(`${API_URL}/progress/${taskId}`);
+                        const pData = await pRes.json();
+
+                        if (pData.percent) {
+                            progressBar.style.width = pData.percent + "%";
+                            progressText.innerText = `${pData.status} (${pData.percent}%)`;
+
+                            if (pData.percent === 100) {
+                                clearInterval(interval);
+                                showResult(pData.result);
+                            }
+                        }
+
+                        if (pData.status === 'Error') {
+                            clearInterval(interval);
+                            progressText.innerText = '❌ Error: ' + (pData.error || 'Unknown');
+                            btnProcess.disabled = false;
+                            alert('Error: ' + (pData.error || 'Proses gagal'));
+                        }
+                    } catch (e) {
+                        // Ignore transient network errors
+                    }
+                }, 2000);
+
+            } catch (e) {
+                alert("Error: " + e.message);
+                btnProcess.disabled = false;
+                progressArea.classList.add('hidden');
+            }
+        };
+
+        function showResult(data) {
+            btnProcess.disabled = false;
+            progressText.innerText = "Selesai!";
+
+            const downloadUrl = data.url + "?t=" + Date.now();
+            const viewUrl = downloadUrl.replace("/download/", "/view/");
+
+            btnDownload.href = downloadUrl;
+            document.getElementById('btnReview').href = viewUrl;
+
+            // Intelligent Player Switch
+            playerContainer.innerHTML = '';
+            if (data.type === 'audio') {
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.src = viewUrl;
+                playerContainer.appendChild(audio);
+                btnDownload.innerHTML = '<i class="fas fa-file-audio"></i> Download MP3';
+            } else {
+                const video = document.createElement('video');
+                video.controls = true;
+                video.src = viewUrl;
+
+                // Add Subtitles Track if available
+                if (data.vtt_url) {
+                    const track = document.createElement('track');
+                    track.kind = 'subtitles';
+                    track.label = 'Terjemahan';
+                    track.srclang = 'id';
+                    track.src = data.vtt_url.replace("/download/", "/view/");
+                    track.default = true;
+                    video.appendChild(track);
+
+                    // Add Button for Subtitle Download
+                    const btnSub = document.createElement('a');
+                    btnSub.href = data.vtt_url;
+                    btnSub.className = 'btn-process';
+                    btnSub.style.background = 'rgba(255,255,255,0.1)';
+                    btnSub.style.marginTop = '10px';
+                    btnSub.innerHTML = '<i class="fas fa-closed-captioning"></i> Download Subtitle (.vtt)';
+                    btnSub.download = '';
+                    playerContainer.appendChild(btnSub);
+                }
+
+                playerContainer.appendChild(video);
+                btnDownload.innerHTML = '<i class="fas fa-file-video"></i> Download Video';
+            }
+
+            resultArea.classList.remove('hidden');
+        }
+    </script>
+    <script>
+        // PWA INSTALLER
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW Registered'))
+                    .catch(err => console.log('SW Fail:', err));
+            });
+        }
+    </script>
+
+</body>
+
+</html>
