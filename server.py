@@ -10,7 +10,7 @@ import math
 import random
 import re
 import numpy as np
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, session, redirect, render_template_string
 from flask_cors import CORS
 import edge_tts
 import librosa
@@ -25,6 +25,15 @@ if not hasattr(PIL.Image, 'ANTIALIAS'):
 
 app = Flask(__name__)
 CORS(app)
+app.secret_key = 'dubbing-studio-pro-2025-secret'
+
+# ==========================================
+# USER ACCOUNTS (username: password)
+# ==========================================
+USERS = {
+    'admin': 'admin123',
+    'pro': 'pro123',
+}
 
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'outputs'
@@ -1445,17 +1454,149 @@ def process_dubbing(task_id, file_path, source_lang, target_lang, video_format, 
 
 
 # ==========================================
+# LOGIN PAGE HTML
+# ==========================================
+LOGIN_HTML = '''
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Dubbing Studio Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        }
+        .login-box {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 50px 40px;
+            width: 400px;
+            max-width: 90vw;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .logo { font-size: 50px; margin-bottom: 10px; }
+        h1 { color: #fff; font-size: 24px; margin-bottom: 5px; }
+        .subtitle { color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 30px; }
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .input-group label {
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .input-group input:focus {
+            border-color: #7c3aed;
+            background: rgba(124,58,237,0.1);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(124,58,237,0.4);
+        }
+        .error {
+            background: rgba(239,68,68,0.15);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #f87171;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="logo">&#127908;</div>
+        <h1>AI Dubbing Studio</h1>
+        <p class="subtitle">Masuk untuk mengakses studio</p>
+        {{ error_html }}
+        <form method="POST" action="/login">
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" name="username" placeholder="Masukkan username" required autofocus>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Masukkan password" required>
+            </div>
+            <button type="submit" class="btn-login">Masuk</button>
+        </form>
+    </div>
+</body>
+</html>
+'''
+
+# ==========================================
 # FLASK ROUTES
 # ==========================================
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
+        if username in USERS and USERS[username] == password:
+            session['logged_in'] = True
+            session['username'] = username
+            return redirect('/')
+        else:
+            error = '<div class="error">Username atau password salah!</div>'
+            return render_template_string(LOGIN_HTML, error_html=error)
+    return render_template_string(LOGIN_HTML, error_html='')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/login')
+
 @app.route('/')
 def home():
+    if not session.get('logged_in'):
+        return redirect('/login')
     if os.path.exists('dub.html'): return send_file('dub.html')
     if os.path.exists('voice.html'): return send_file('voice.html')
     return "Not Found"
 
 @app.route('/dub-video', methods=['POST'])
 def start_job():
+    if not session.get('logged_in'):
+        return jsonify({'error': 'Unauthorized. Please login.'}), 401
     try:
         mode = request.form.get('mode', 'video')
         
