@@ -28,12 +28,15 @@ CORS(app)
 app.secret_key = 'dubbing-studio-pro-2025-secret'
 
 # ==========================================
-# USER ACCOUNTS (username: password)
+# USER ACCOUNTS (username: {password, role})
 # ==========================================
 USERS = {
-    'admin': 'admin123',
-    'pro': 'pro123',
+    'admin': {'password': 'admin123', 'role': 'pro'},
+    'pro': {'password': 'pro123', 'role': 'pro'},
 }
+
+# Demo limits
+DEMO_MAX_DURATION = 30  # seconds
 
 UPLOAD_FOLDER = 'uploads'
 OUTPUT_FOLDER = 'outputs'
@@ -1473,38 +1476,75 @@ LOGIN_HTML = '''
             justify-content: center;
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
         }
-        .login-box {
+        .container {
+            display: flex;
+            gap: 30px;
+            max-width: 850px;
+            width: 95vw;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .card {
             background: rgba(255,255,255,0.05);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 20px;
-            padding: 50px 40px;
-            width: 400px;
-            max-width: 90vw;
+            padding: 40px 30px;
+            width: 380px;
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            transition: all 0.3s;
         }
-        .logo { font-size: 50px; margin-bottom: 10px; }
-        h1 { color: #fff; font-size: 24px; margin-bottom: 5px; }
-        .subtitle { color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 30px; }
+        .card:hover { transform: translateY(-5px); }
+        .card.pro { border-color: rgba(168,85,247,0.4); }
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+        .badge-free { background: rgba(34,197,94,0.2); color: #4ade80; }
+        .badge-pro { background: rgba(168,85,247,0.2); color: #c084fc; }
+        .logo { font-size: 40px; margin-bottom: 10px; }
+        h2 { color: #fff; font-size: 22px; margin-bottom: 8px; }
+        .price { color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 20px; }
+        .price b { color: #fff; font-size: 20px; }
+        .features {
+            text-align: left;
+            margin-bottom: 25px;
+        }
+        .features li {
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+            list-style: none;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .features li::before { margin-right: 8px; }
+        .features li.yes::before { content: "\\2705"; }
+        .features li.no::before { content: "\\274C"; }
+        .features li.no { color: rgba(255,255,255,0.3); }
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             text-align: left;
         }
         .input-group label {
-            color: rgba(255,255,255,0.7);
-            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
         .input-group input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 14px;
             background: rgba(255,255,255,0.08);
             border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 12px;
+            border-radius: 10px;
             color: #fff;
-            font-size: 15px;
+            font-size: 14px;
             outline: none;
             transition: all 0.3s;
         }
@@ -1512,51 +1552,101 @@ LOGIN_HTML = '''
             border-color: #7c3aed;
             background: rgba(124,58,237,0.1);
         }
-        .btn-login {
+        .btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #7c3aed, #a855f7);
             border: none;
             border-radius: 12px;
             color: #fff;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            margin-top: 10px;
         }
-        .btn-login:hover {
+        .btn:hover {
             transform: translateY(-2px);
+        }
+        .btn-demo {
+            background: linear-gradient(135deg, #059669, #10b981);
+        }
+        .btn-demo:hover {
+            box-shadow: 0 8px 25px rgba(16,185,129,0.4);
+        }
+        .btn-pro {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+        }
+        .btn-pro:hover {
             box-shadow: 0 8px 25px rgba(124,58,237,0.4);
         }
         .error {
             background: rgba(239,68,68,0.15);
             border: 1px solid rgba(239,68,68,0.3);
             color: #f87171;
-            padding: 10px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
         }
+        .contact {
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+            margin-top: 15px;
+        }
+        .contact a { color: #a855f7; text-decoration: none; }
     </style>
 </head>
 <body>
-    <div class="login-box">
-        <div class="logo">&#127908;</div>
-        <h1>AI Dubbing Studio</h1>
-        <p class="subtitle">Masuk untuk mengakses studio</p>
-        {{ error_html }}
-        <form method="POST" action="/login">
-            <div class="input-group">
-                <label>Username</label>
-                <input type="text" name="username" placeholder="Masukkan username" required autofocus>
-            </div>
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="Masukkan password" required>
-            </div>
-            <button type="submit" class="btn-login">Masuk</button>
-        </form>
+    <div class="container">
+        <!-- DEMO CARD -->
+        <div class="card">
+            <span class="badge badge-free">GRATIS</span>
+            <div class="logo">&#127911;</div>
+            <h2>Demo</h2>
+            <div class="price"><b>Rp 0</b> / selamanya</div>
+            <ul class="features">
+                <li class="yes">Video dubbing</li>
+                <li class="yes">Subtitle otomatis</li>
+                <li class="yes">Multi bahasa</li>
+                <li class="no">Maks 30 detik video</li>
+                <li class="no">Anti-Copyright</li>
+                <li class="no">Mode Sync Audio</li>
+                <li class="no">Keep Original SFX</li>
+            </ul>
+            <form method="POST" action="/login">
+                <input type="hidden" name="demo" value="true">
+                <button type="submit" class="btn btn-demo">Coba Demo Gratis</button>
+            </form>
+        </div>
+
+        <!-- PRO CARD -->
+        <div class="card pro">
+            <span class="badge badge-pro">PRO</span>
+            <div class="logo">&#127908;</div>
+            <h2>Pro</h2>
+            <div class="price"><b>Premium</b> / akses penuh</div>
+            <ul class="features">
+                <li class="yes">Video dubbing tanpa batas</li>
+                <li class="yes">Subtitle otomatis</li>
+                <li class="yes">Multi bahasa</li>
+                <li class="yes">Video panjang unlimited</li>
+                <li class="yes">Anti-Copyright</li>
+                <li class="yes">Mode Sync Audio</li>
+                <li class="yes">Keep Original SFX</li>
+            </ul>
+            {{ error_html }}
+            <form method="POST" action="/login">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" name="username" placeholder="Username Pro">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="Password">
+                </div>
+                <button type="submit" class="btn btn-pro">Login Pro</button>
+            </form>
+            <p class="contact">Hubungi admin untuk akun Pro</p>
+        </div>
     </div>
 </body>
 </html>
@@ -1569,11 +1659,20 @@ LOGIN_HTML = '''
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        # Demo login (no credentials needed)
+        if request.form.get('demo') == 'true':
+            session['logged_in'] = True
+            session['username'] = 'demo'
+            session['role'] = 'demo'
+            return redirect('/')
+        
+        # Pro login
         username = request.form.get('username', '')
         password = request.form.get('password', '')
-        if username in USERS and USERS[username] == password:
+        if username in USERS and USERS[username]['password'] == password:
             session['logged_in'] = True
             session['username'] = username
+            session['role'] = USERS[username]['role']
             return redirect('/')
         else:
             error = '<div class="error">Username atau password salah!</div>'
@@ -1584,6 +1683,16 @@ def login():
 def logout():
     session.clear()
     return redirect('/login')
+
+@app.route('/user-info')
+def user_info():
+    if not session.get('logged_in'):
+        return jsonify({'logged_in': False})
+    return jsonify({
+        'logged_in': True,
+        'username': session.get('username', ''),
+        'role': session.get('role', 'demo')
+    })
 
 @app.route('/')
 def home():
@@ -1597,6 +1706,10 @@ def home():
 def start_job():
     if not session.get('logged_in'):
         return jsonify({'error': 'Unauthorized. Please login.'}), 401
+    
+    # Demo user restrictions
+    user_role = session.get('role', 'demo')
+    
     try:
         mode = request.form.get('mode', 'video')
         
@@ -1622,6 +1735,12 @@ def start_job():
         subtitle_lang = request.form.get('subtitle_lang', 'match')
         sync_video = request.form.get('sync_video_to_audio', 'false')
         sync_mode = 'video_to_audio' if sync_video == 'true' else 'audio_to_video'
+        
+        # Demo user restrictions - disable pro features
+        if user_role == 'demo':
+            unique_mode = 'false'  # No anti-copyright
+            sync_video = 'false'   # No sync video
+            sync_mode = 'audio_to_video'
         
         if mode == 'subtitle':
             keep_orig = 'true'
